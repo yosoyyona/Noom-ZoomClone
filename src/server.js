@@ -15,14 +15,15 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+const sockets = []; //who are connected? to communicate between other browsers
+
 wss.on("connection", (socket) => {
+  sockets.push(socket);
   console.log("Connected to Browser✅");
-  socket.on("close", () => console.log("Disconnected from the Browser❌")); //when the site is closed
+  socket.on("close", () => console.log("Disconnected from the Browser❌"));
   socket.on("message", (message) => {
-    const translatedMessage = message.toString('utf8'); //convert buffer to string
-    console.log(translatedMessage);
+    sockets.forEach(aSocket => aSocket.send(message.toString('utf8')));
   });
-  socket.send("hello!");
 });
 
 

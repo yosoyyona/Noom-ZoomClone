@@ -38,10 +38,14 @@ wsServer.on("connection", (socket) => {
     socket.join(roomName);
     done();
     socket.to(roomName).emit("welcome", socket.nickname);
+    wsServer.sockets.emit("room_change", publicRooms()); //when new public room is created
   });
   socket.on("disconnecting", () => {
     socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
   });
+  socket.on("disconnet", () => {
+    wsServer.sockets.emit("room_change", publicRooms()); //when occurs disconnection(deleted room)
+  })
   socket.on("new_message", (msg, room, done) => {
     socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
     done();

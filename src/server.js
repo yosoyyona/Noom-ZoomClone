@@ -1,6 +1,6 @@
 import http from "http";
-import SocketIO from "socket.io";
-//import WebSocket from "ws";
+import { Server } from "socket.io";
+import { instrument } from "@socket.io/admin-ui";
 import express from "express";
 
 const app = express();
@@ -12,7 +12,16 @@ app.get("/", (req, res) => res.render("home"));
 app.get("/*", (req, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
-const wsServer = SocketIO(httpServer);
+const wsServer = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true
+  }
+});
+
+instrument(wsServer, {
+  auth: false,
+});
 
 function publicRooms() {
   const {
@@ -45,7 +54,7 @@ wsServer.on("connection", (socket) => {
     wsServer.sockets.emit("room_change", publicRooms());
   });
   socket.on("disconnecting", () => {
-    socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname, countRoom(roomName) - 1));
+    socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname, countRoom(room) - 1));
   });
   socket.on("disconnet", () => {
     wsServer.sockets.emit("room_change", publicRooms());
@@ -60,6 +69,7 @@ wsServer.on("connection", (socket) => {
 
 // WebSocket
 /* 
+import WebSocket from "ws";
 const wss = new WebSocket.Server({ server });
 const sockets = [];
 wss.on("connection", (socket) => {

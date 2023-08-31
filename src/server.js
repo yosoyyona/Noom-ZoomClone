@@ -1,6 +1,5 @@
 import http from "http";
-import { Server } from "socket.io";
-import { instrument } from "@socket.io/admin-ui";
+import SocketIO from "socket.io";
 import express from "express";
 
 const app = express();
@@ -12,6 +11,17 @@ app.get("/", (req, res) => res.render("home"));
 app.get("/*", (req, res) => res.redirect("/"));
 
 const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer)
+
+const handleListen = () => console.log(`Listening on http://localhost:3000`);
+httpServer.listen(3000, handleListen);
+
+
+
+//chat feature of socket.io
+/*
+import { instrument } from "@socket.io/admin-ui";
+
 const wsServer = new Server(httpServer, {
   cors: {
     origin: ["https://admin.socket.io"],
@@ -65,7 +75,7 @@ wsServer.on("connection", (socket) => {
   })
   socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 });
-
+*/
 
 // WebSocket
 /* 
@@ -88,6 +98,3 @@ wss.on("connection", (socket) => {
     }
   });
 }); */
-
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
-httpServer.listen(3000, handleListen);

@@ -82,6 +82,13 @@ function handleCameraClick() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
+  if(myPeerConnection) {
+    const videoTrack = myStream.getVideoTracks()[0];
+    const videoSender = myPeerConnection
+      .getSenders()
+      .find((sender) => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
+  }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
@@ -111,7 +118,6 @@ async function handleWelcomeSubmit(event) {
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
 // Socket code
- // peer A
 socket.on("welcome", async () => {
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
@@ -119,7 +125,6 @@ socket.on("welcome", async () => {
   socket.emit("offer", offer, roomName);
 })
 
- // peer B
 socket.on("offer", async (offer) => { 
   console.log("received the offer");
   myPeerConnection.setRemoteDescription(offer);
@@ -129,7 +134,6 @@ socket.on("offer", async (offer) => {
   console.log("sent the answer");
 }) 
 
- // peer A
 socket.on("answer", (answer) => {
   console.log("received the answer");
   myPeerConnection.setRemoteDescription(answer);

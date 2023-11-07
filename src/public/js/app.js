@@ -146,9 +146,21 @@ socket.on("ice", (ice) => {
 
 // RTC code
 function makeConnection() {
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun1.l.google.com:19302",
+          "stun:stun2.l.google.com:19302",
+          "stun:stun3.l.google.com:19302",
+          "stun:stun4.l.google.com:19302",
+        ]
+      }
+    ]
+  });
   myPeerConnection.addEventListener("icecandidate", handleIce);
-  myPeerConnection.addEventListener("addStream", handleAddStream);
+  myPeerConnection.addEventListener("track", handleTrack); // change to use in safari 
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
@@ -159,8 +171,8 @@ function handleIce(data) {
   socket.emit("ice", data.candidate, roomName);
 }
 
-function handleAddStream(data) {
+function handleTrack(data) {
+  console.log("handle track")
   const peerFace = document.getElementById("peerFace");
-  console.log("Peer's Stream", data.stream);
-  peerFace.srcObject = data.stream;
+  peerFace.srcObject = data.streams[0];
 }
